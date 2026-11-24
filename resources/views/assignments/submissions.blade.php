@@ -36,6 +36,9 @@
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
             
             {{-- TODO 7b: Tambahkan tombol Export CSV yang mengarah ke route('assignments.export-csv', $assignment) --}}
+            <a href="{{ route('assignments.export-csv', $assignment->id) }}" class="btn btn-primary btn-sm">
+                Export CSV
+            </a>
 
             <a href="{{ route('assignments.edit', $assignment->id) }}" class="btn btn-secondary btn-sm">
                 Edit Tugas
@@ -51,6 +54,27 @@
 
 <!-- Statistik Pengumpulan & Nilai -->
 {{-- TODO 7a: Tampilkan kartu ringkasan Total Mahasiswa, Jumlah Mengumpulkan, dan Rata-rata Nilai --}}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="padding: 1rem 1.25rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Total Mahasiswa</div>
+            <div style="font-size: 1.75rem; font-weight: 700; color: var(--slate-900);">{{ $students->count() }}</div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="padding: 1rem 1.25rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Sudah Mengumpulkan</div>
+            <div style="font-size: 1.75rem; font-weight: 700; color: #059669;">{{ $submissions->count() }}</div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="padding: 1rem 1.25rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Rata-rata Nilai</div>
+            <div style="font-size: 1.75rem; font-weight: 700; color: #2563eb;">{{ $averageScore !== null ? $averageScore : '-' }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">dari {{ $gradedSubmissions->count() }} tugas yang dinilai</div>
+        </div>
+    </div>
+</div>
 
 <!-- Daftar Pengumpulan Mahasiswa -->
 <div class="card">
@@ -130,7 +154,18 @@
                                 <td>
                                     @if($sub)
                                         {{-- TODO 7c: Tambahkan form PATCH untuk input nilai (0-100) dan catatan_dosen pada setiap mahasiswa yang sudah mengumpulkan --}}
-                                        <span style="font-size: 0.8rem; color: var(--text-muted);">Form penilaian belum diimplementasikan</span>
+                                        <form action="{{ route('submissions.grade', $sub->id) }}" method="POST" style="display: flex; gap: 0.375rem; flex-wrap: wrap; align-items: flex-start;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="number" name="nilai" class="form-control" min="0" max="100" required
+                                                   placeholder="0-100" value="{{ old('nilai', $sub->nilai) }}" style="width: 80px;">
+                                            <input type="text" name="catatan_dosen" class="form-control" maxlength="1000"
+                                                   placeholder="Catatan untuk mahasiswa" value="{{ old('catatan_dosen', $sub->catatan_dosen) }}" style="flex: 1; min-width: 130px;">
+                                            <button type="submit" class="btn btn-primary btn-sm">Simpan Nilai</button>
+                                        </form>
+                                        @error('nilai')
+                                            <div style="color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
+                                        @enderror
                                     @else
                                         <span style="font-size: 0.8rem; color: var(--text-muted);">&mdash;</span>
                                     @endif
